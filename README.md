@@ -186,8 +186,20 @@ Windows 用户也可以直接双击 `preview.bat`。
 
 # 八、常见问题
 
+**Q：Actions 报错 `Get Pages site failed` / `配置 Pages` 这一步失败？**
+
+这是**最常遇到的第一个错误**，几乎每个新仓库都会撞一次。原因不是代码，而是仓库还没启用 Pages。
+
+修复（30 秒）：
+
+1. 打开 `https://github.com/你的用户名/仓库名/settings/pages`
+2. 在 **Build and deployment** → **Source** 里选 **GitHub Actions**（不要选 Deploy from a branch）
+3. 回到 `Actions` 标签页 → 点开失败的那次运行 → 右上角 **Re-run all jobs**
+
+> 这一步无法自动化。GitHub 官方的 `configure-pages` 虽然有个 `enablement` 参数能自动开 Pages，但官方明确要求「必须使用非 GITHUB_TOKEN 的令牌」，默认令牌不生效，所以只能手动点一次。
+
 **Q：Actions 里显示红色叉号怎么办？**  
-点进去看报错。90% 是 `.github/workflows/deploy.yml` 没上传成功，或者 `package.json` 丢失。检查这两个文件是否在仓库里。
+点进去看是哪一步失败。除了上面说的 Pages 未启用，另一种常见原因是 `.github/workflows/deploy.yml` 没上传成功（网页拖拽上传容易漏隐藏文件夹）。
 
 **Q：网站打开是白屏 / 没有样式？**  
 多半是 `base` 路径问题。如果你绑了自定义域名，要确保 `docs/public/CNAME` 文件存在。代码会自动处理，但 CNAME 文件必须真的存在。
