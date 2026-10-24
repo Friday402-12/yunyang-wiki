@@ -1,0 +1,404 @@
+# 郧中 Wiki 内容后台配置
+# 这个文件决定「后台长什么样、能改哪些栏目、提交到哪里」。
+# 你只需要改下面 backend 里的 repo 和 site_url 两处。
+
+backend:
+  name: github
+  repo: friday402-12/yunyang-wiki # ← 你的 GitHub 用户名/仓库名，用户名不对就改这里
+  branch: main
+  # 允许没有仓库权限的人提交（会自动 fork 并开 PR），你审核后才合并
+  open_authoring: true
+  # 部署了 OAuth 中转后才填这一行，填了体验最好；用令牌登录则留空
+  # base_url: https://sveltia-cms-auth.你的账号.workers.dev
+
+# 审核模式：编辑者保存后进入「待审核」，你有权发布，其他人不能直接上线
+publish_mode: editorial_workflow
+
+locale: zh_Hans
+
+site_url: https://friday402-12.github.io/yunyang-wiki/ # ← 换成你的正式网址
+display_url: friday402-12.github.io/yunyang-wiki
+logo_url: https://friday402-12.github.io/yunyang-wiki/logo.svg
+
+# 图片存放位置。注意：图片会进仓库，单张请压到 500KB 以内
+media_folder: docs/public/uploads
+public_folder: /uploads
+
+collections:
+  - name: section-1
+    label: 走进郧中
+    label_singular: 走进郧中的文章
+    folder: docs/走进郧中
+    create: true
+    slug: "{{fields.title}}"
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - {
+          label: 目录排序（数字小的在前）,
+          name: order,
+          widget: number,
+          value_type: int,
+          default: 99,
+          required: false,
+        }
+      - {
+          label: 写作日期,
+          name: date,
+          widget: datetime,
+          date_format: YYYY-MM-DD,
+          time_format: false,
+          format: YYYY-MM-DD,
+        }
+      - {
+          label: 最后核实日期,
+          name: reviewedAt,
+          widget: datetime,
+          date_format: YYYY-MM-DD,
+          time_format: false,
+          format: YYYY-MM-DD,
+          required: false,
+        }
+      - { label: 栏目, name: category, widget: hidden, default: 走进郧中 }
+      - { label: 一句话摘要, name: description, widget: text, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - label: 作者
+        name: author
+        widget: list
+        required: false
+        summary: "{{fields.name}}"
+        fields:
+          - { label: 姓名, name: name, widget: string }
+      - {
+          label: 标记为「内容待核实」,
+          name: needsReview,
+          widget: boolean,
+          default: false,
+          required: false,
+        }
+      - { label: 正文, name: body, widget: markdown }
+
+  - name: section-2
+    label: 校园生活
+    label_singular: 校园生活的文章
+    folder: docs/校园生活
+    create: true
+    slug: "{{fields.title}}"
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - {
+          label: 目录排序（数字小的在前）,
+          name: order,
+          widget: number,
+          value_type: int,
+          default: 99,
+          required: false,
+        }
+      - {
+          label: 写作日期,
+          name: date,
+          widget: datetime,
+          date_format: YYYY-MM-DD,
+          time_format: false,
+          format: YYYY-MM-DD,
+        }
+      - {
+          label: 最后核实日期,
+          name: reviewedAt,
+          widget: datetime,
+          date_format: YYYY-MM-DD,
+          time_format: false,
+          format: YYYY-MM-DD,
+          required: false,
+        }
+      - { label: 栏目, name: category, widget: hidden, default: 校园生活 }
+      - { label: 一句话摘要, name: description, widget: text, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - label: 作者
+        name: author
+        widget: list
+        required: false
+        summary: "{{fields.name}}"
+        fields:
+          - { label: 姓名, name: name, widget: string }
+      - {
+          label: 标记为「内容待核实」,
+          name: needsReview,
+          widget: boolean,
+          default: false,
+          required: false,
+        }
+      - { label: 正文, name: body, widget: markdown }
+
+  - name: section-3
+    label: 学习指南
+    label_singular: 学习指南的文章
+    folder: docs/学习指南
+    create: true
+    slug: "{{fields.title}}"
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - {
+          label: 目录排序（数字小的在前）,
+          name: order,
+          widget: number,
+          value_type: int,
+          default: 99,
+          required: false,
+        }
+      - {
+          label: 写作日期,
+          name: date,
+          widget: datetime,
+          date_format: YYYY-MM-DD,
+          time_format: false,
+          format: YYYY-MM-DD,
+        }
+      - {
+          label: 最后核实日期,
+          name: reviewedAt,
+          widget: datetime,
+          date_format: YYYY-MM-DD,
+          time_format: false,
+          format: YYYY-MM-DD,
+          required: false,
+        }
+      - { label: 栏目, name: category, widget: hidden, default: 学习指南 }
+      - { label: 一句话摘要, name: description, widget: text, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - label: 作者
+        name: author
+        widget: list
+        required: false
+        summary: "{{fields.name}}"
+        fields:
+          - { label: 姓名, name: name, widget: string }
+      - {
+          label: 标记为「内容待核实」,
+          name: needsReview,
+          widget: boolean,
+          default: false,
+          required: false,
+        }
+      - { label: 正文, name: body, widget: markdown }
+
+  - name: section-4
+    label: 升学之路
+    label_singular: 升学之路的文章
+    folder: docs/升学之路
+    create: true
+    slug: "{{fields.title}}"
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - {
+          label: 目录排序（数字小的在前）,
+          name: order,
+          widget: number,
+          value_type: int,
+          default: 99,
+          required: false,
+        }
+      - {
+          label: 写作日期,
+          name: date,
+          widget: datetime,
+          date_format: YYYY-MM-DD,
+          time_format: false,
+          format: YYYY-MM-DD,
+        }
+      - {
+          label: 最后核实日期,
+          name: reviewedAt,
+          widget: datetime,
+          date_format: YYYY-MM-DD,
+          time_format: false,
+          format: YYYY-MM-DD,
+          required: false,
+        }
+      - { label: 栏目, name: category, widget: hidden, default: 升学之路 }
+      - { label: 一句话摘要, name: description, widget: text, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - label: 作者
+        name: author
+        widget: list
+        required: false
+        summary: "{{fields.name}}"
+        fields:
+          - { label: 姓名, name: name, widget: string }
+      - {
+          label: 标记为「内容待核实」,
+          name: needsReview,
+          widget: boolean,
+          default: false,
+          required: false,
+        }
+      - { label: 正文, name: body, widget: markdown }
+
+  - name: section-5
+    label: 社团与活动
+    label_singular: 社团与活动的文章
+    folder: docs/社团与活动
+    create: true
+    slug: "{{fields.title}}"
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - {
+          label: 目录排序（数字小的在前）,
+          name: order,
+          widget: number,
+          value_type: int,
+          default: 99,
+          required: false,
+        }
+      - {
+          label: 写作日期,
+          name: date,
+          widget: datetime,
+          date_format: YYYY-MM-DD,
+          time_format: false,
+          format: YYYY-MM-DD,
+        }
+      - {
+          label: 最后核实日期,
+          name: reviewedAt,
+          widget: datetime,
+          date_format: YYYY-MM-DD,
+          time_format: false,
+          format: YYYY-MM-DD,
+          required: false,
+        }
+      - { label: 栏目, name: category, widget: hidden, default: 社团与活动 }
+      - { label: 一句话摘要, name: description, widget: text, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - label: 作者
+        name: author
+        widget: list
+        required: false
+        summary: "{{fields.name}}"
+        fields:
+          - { label: 姓名, name: name, widget: string }
+      - {
+          label: 标记为「内容待核实」,
+          name: needsReview,
+          widget: boolean,
+          default: false,
+          required: false,
+        }
+      - { label: 正文, name: body, widget: markdown }
+
+  - name: section-6
+    label: 常见问题
+    label_singular: 常见问题的文章
+    folder: docs/常见问题
+    create: true
+    slug: "{{fields.title}}"
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - {
+          label: 目录排序（数字小的在前）,
+          name: order,
+          widget: number,
+          value_type: int,
+          default: 99,
+          required: false,
+        }
+      - {
+          label: 写作日期,
+          name: date,
+          widget: datetime,
+          date_format: YYYY-MM-DD,
+          time_format: false,
+          format: YYYY-MM-DD,
+        }
+      - {
+          label: 最后核实日期,
+          name: reviewedAt,
+          widget: datetime,
+          date_format: YYYY-MM-DD,
+          time_format: false,
+          format: YYYY-MM-DD,
+          required: false,
+        }
+      - { label: 栏目, name: category, widget: hidden, default: 常见问题 }
+      - { label: 一句话摘要, name: description, widget: text, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - label: 作者
+        name: author
+        widget: list
+        required: false
+        summary: "{{fields.name}}"
+        fields:
+          - { label: 姓名, name: name, widget: string }
+      - {
+          label: 标记为「内容待核实」,
+          name: needsReview,
+          widget: boolean,
+          default: false,
+          required: false,
+        }
+      - { label: 正文, name: body, widget: markdown }
+
+  - name: section-7
+    label: 参与共建
+    label_singular: 参与共建的文章
+    folder: docs/参与共建
+    create: true
+    slug: "{{fields.title}}"
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - {
+          label: 目录排序（数字小的在前）,
+          name: order,
+          widget: number,
+          value_type: int,
+          default: 99,
+          required: false,
+        }
+      - {
+          label: 写作日期,
+          name: date,
+          widget: datetime,
+          date_format: YYYY-MM-DD,
+          time_format: false,
+          format: YYYY-MM-DD,
+        }
+      - {
+          label: 最后核实日期,
+          name: reviewedAt,
+          widget: datetime,
+          date_format: YYYY-MM-DD,
+          time_format: false,
+          format: YYYY-MM-DD,
+          required: false,
+        }
+      - { label: 栏目, name: category, widget: hidden, default: 参与共建 }
+      - { label: 一句话摘要, name: description, widget: text, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - label: 作者
+        name: author
+        widget: list
+        required: false
+        summary: "{{fields.name}}"
+        fields:
+          - { label: 姓名, name: name, widget: string }
+      - {
+          label: 标记为「内容待核实」,
+          name: needsReview,
+          widget: boolean,
+          default: false,
+          required: false,
+        }
+      - { label: 正文, name: body, widget: markdown }
