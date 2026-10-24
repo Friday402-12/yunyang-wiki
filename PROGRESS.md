@@ -1,191 +1,277 @@
 # 郧中 Wiki · 项目进度
 
-> 快照时间：2026-10-24 21:30
-> 当前阶段：**第 5 阶段（绑定域名）进行中**
-> 本文档记录从零到上线的完整过程，供交接、复盘、以及未来复制到其他学校时参考。
+> 更新时间：2026-10-24
+> 线上地址：<https://friday402-12.github.io/yunyang-wiki/>
+> 当前阶段：**绑定自定义域名（就差阿里云后台那几条记录）**
 
 ---
 
-## 一、一句话现状
+## 0. 现在要做的唯一一件事
 
-站点已建成并上线，20 篇文章、7 个栏目可访问；内容后台（含审批流）已部署可用；正在把地址从 `github.io` 切换到 `yunyangwiki.wang`。
+**进度（2026-10-24 晚）**
+
+- ✅ 4 条 A 记录已生效：权威服务器 `dns15.hichina.com`、DNSPod、114DNS 均已返回 4 个 IP
+- ✅ 仓库里 `docs/public/CNAME` 已加好，代码已自动切到根路径（`base: /`，sitemap 已是 `https://yunyangwiki.wang/`）
+
+**还差两步，都在网页上点：**
+
+1. 阿里云后台补一条 **www 的 CNAME**（见 [2.2](#22-www-子域名--1-条-cname不是-a-记录)）
+2. 仓库 **Settings → Pages → Custom domain** 填 `yunyangwiki.wang` → 等证书 → 勾 **Enforce HTTPS**（见 [2.4](#24-通了以后顺序不能反)）
+
+代码这边**不需要再改**：域名、favicon、分享卡片、robots、后台地址都会跟着真实域名自动切换。
 
 ---
 
-## 二、关键地址
+## 1. 一句话现状
+
+- 站点已上线可用：**21 篇正文、7 个栏目**，搜索、暗色模式、移动端都正常
+- 内容后台可用：`网址 + /admin/`，`editorial_workflow` 模式（编辑保存 → 只有站长点发布才上线）
+- 投稿闭环已打通：任何人都能通过 GitHub Issue 表单投稿/纠错，不需要仓库权限
+- 代码侧零配置：加了 `docs/public/CNAME` 之后，站点会自动从 `/yunyang-wiki/` 切到根路径
+
+---
+
+## 2. 域名解析（阿里云后台那个弹窗）
+
+### 2.1 根域名 `yunyangwiki.wang` → 4 条 A 记录
+
+截图里的「快速添加解析」弹窗，按这个填：
+
+1. 业务需求保持选中 **「将网站域名解析到服务器 IPv4 地址」**
+2. 「请选择网站域名」**只勾 `yunyangwiki.wang`（对应 @）**，www 这次先别勾
+3. 「请输入网站的 IP」框里粘这 4 行（一行一个）：
+
+```
+185.199.108.153
+185.199.109.153
+185.199.110.153
+185.199.111.153
+```
+
+4. 点 **确定**。列表里会出现 **4 条 A 记录**，主机记录都是 `@`、记录值各不相同
+
+> 这 4 个是 GitHub Pages 的官方 IP，**缺一条会导致部分地区打不开**。不要加你自己的服务器 IP。
+
+### 2.2 `www` 子域名 → 1 条 CNAME（不是 A 记录）
+
+弹窗做不了 CNAME，回到「解析设置」页点 **添加记录**：
+
+| 字段 | 填什么 |
+| --- | --- |
+| 记录类型 | `CNAME` |
+| 主机记录 | `www` |
+| 记录值 | `friday402-12.github.io` |
+| TTL | 默认（10 分钟） |
+
+> 为什么 www 用 CNAME 不用 A：指到 `friday402-12.github.io`，GitHub 才能给 `www.yunyangwiki.wang` 也签发 HTTPS 证书，并自动跳回根域名。
+
+### 2.3 验证（等 1–10 分钟）
+
+命令行（Windows 也能用）：
+
+```
+nslookup yunyangwiki.wang 223.5.5.5
+```
+
+看到 `185.199.10x.153` 就说明解析生效了。
+
+或者直接把 `http://yunyangwiki.wang` 粘进浏览器：
+- 打开是 **GitHub 404 页面** → DNS 已生效，只是仓库还没认这个域名，这是**正常状态**，继续 2.4
+- 打不开 / 超时 → DNS 还没生效，再等等
+
+### 2.4 通了以后（顺序不能反）
+
+1. ~~在仓库里新建文件 **`docs/public/CNAME`**~~ ✅ **已完成**（内容一行 `yunyangwiki.wang`，无扩展名）
+
+2. 提交并推送 → 等 Actions 变绿（此时站点地址会从 `github.io/yunyang-wiki/` 切到根域名）
+3. 仓库 → **Settings → Pages → Custom domain** 填 `yunyangwiki.wang` → Save
+4. 等 DNS check 通过（几分钟）→ 勾上 **Enforce HTTPS**
+5. 浏览器打开 `https://yunyangwiki.wang/` 验证
+
+> ⚠️ **顺序不能反**：GitHub 一旦发现仓库里有 CNAME 文件，会立刻把 `friday402-12.github.io/yunyang-wiki/` 301 跳到新域名。如果那时 DNS 还不通，**全站会直接打不开**，而且是别人打不开、你自己测试也可能看不出原因。
+
+> 如果 `Enforce HTTPS` 是灰的：证书还在签发，等 15 分钟到 24 小时，GitHub 走 Let's Encrypt 自动签。
+
+---
+
+## 3. 网址速查
 
 | 用途 | 地址 |
 | --- | --- |
-| 线上（当前生效） | https://friday402-12.github.io/yunyang-wiki/ |
-| 线上（切换后） | https://yunyangwiki.wang/ |
-| 代码仓库 | https://github.com/Friday402-12/yunyang-wiki |
-| 内容后台 | 域名 + `/admin/` |
-| Actions 构建 | 仓库 → Actions 标签 |
-| 本地目录 | `D:\workbuddy\yunyang-wiki` |
+| 现在能用的 | <https://friday402-12.github.io/yunyang-wiki/> |
+| 域名通了以后 | <https://yunyangwiki.wang/> |
+| 内容后台 | 网址 + `/admin/` |
+| 代码仓库 | <https://github.com/Friday402-12/yunyang-wiki> |
+| 投稿 / 纠错 | 仓库 Issues（网站上每页底部、404 页、投稿页都有入口） |
 
 ---
 
-## 三、已完成的工作（按阶段）
+## 4. 日常维护
 
-### 阶段 0 · 调研选型
+### 加一篇文章
 
-- 拆解参考站点 `wiki.ncepuinfo.cc`：确认其技术栈是 **VitePress 2.0.0-alpha.20 + Vue3 自定义主题**，自研搜索、Cloudflare Worker 图床、GitHub Actions 部署，共 815 次提交 / 72 篇文章。
-- 结论：**校园攻略站的流量 90% 来自搜索引擎**，所以必须用静态站（SEO 好、免费、加载快），排除飞书/语雀/Notion 这类前端渲染方案。
-- 决策：用 **VitePress 1.6.4 稳定版**而非对方的 2.0 alpha，因为维护团队没有前端能力，稳定性优先。
+1. 打开 `docs/校园生活/` 这类目录，新建 `文章名.md`（文件名就是网址）
+2. 复制这段改掉内容：
 
-### 阶段 1 · 搭建站点骨架
-
-- 目录约定：`docs/<栏目名>/<文章名>.md`，中文目录名，便于非技术同学维护。
-- **侧边栏自动生成**：构建时扫描目录、读 frontmatter 的 `title` 和 `order` 排序，新增文章零配置。
-- **分类页自动聚合**：`catalog.data.ts` 用 `createContentLoader` 收集全部文章，`ArticleList.vue` 支持 `only` / `latest` / `limit` / `exclude` 四种渲染模式。
-- **时效提醒**：`ArticleFooter.vue` 注入页脚，超过 365 天自动挂「内容可能过期」黄条；标了 `needsReview: true` 的挂「尚未核实」提示。
-- 配色：郧山书院意象的深红（`#8C1F28`），logo 用「山 + 日」简笔图形。
-
-### 阶段 2 · 填充内容
-
-- 7 个栏目、20 篇文章、30 个 Markdown 文件：
-  - 走进郧中（4）、校园生活（5）、学习指南（4）、升学之路（2）、社团与活动（2）、常见问题（1）、参与共建（3，含管理类）
-- 校史部分做了事实核查：1547 年郧山书院、1902 年郧阳府中学堂、1994 年定名、校训「明德博学，进而不已」——均来自政府公开信息与学校官网。
-- **具体数字一律留白**（菜价、作息时刻、部门电话、宿舍人数），只写方法论并标 `needsReview`，避免编造误导。
-
-### 阶段 3 · 内容后台
-
-- 部署 **Sveltia CMS** 到 `/admin/`，7 个 collection 对应 7 个栏目，字段与 frontmatter 严格对应。
-- 开启 `publish_mode: editorial_workflow`：**编辑保存只生成草稿，站长点发布才上线**——这就是「他人可写、我批准才生效」的实现。
-- 开启 `open_authoring: true`：任何人用 GitHub 账号即可提交，不需要仓库权限，走 fork + PR。
-- 配套：角色权限说明页、CODEOWNERS、PR 自检模板。
-- 关键调研：**GitHub 至今不支持纯前端 OAuth**（PKCE 已搁置），所以给两条路——① 个人访问令牌登录（零服务器，实测可用）② Cloudflare Worker 中转（体验最好，需配一次）。
-
-### 阶段 4 · 上线
-
-- 仓库公开、Actions 自动构建部署到 GitHub Pages。
-- 首次构建失败一次，原因与修复见第五节第 9 条。
-- 线上验收：8 个路径全部 200、资源前缀正确、sitemap 正确、手机端单列无溢出、搜索索引 168K、404 页正常。
-
-### 阶段 5 · 绑定域名（进行中）
-
-- 域名：`yunyangwiki.wang`（根域名，不带 www）。
-- 代码侧已适配（已验证）：检测到 `CNAME` 文件后，资源路径自动从 `/yunyang-wiki/` 切到 `/`，sitemap 域名自动切到新域名。
-- 待完成：DNS 解析 → 实名认证确认 → 推 CNAME 文件 → Pages 填域名 → 强制 HTTPS。
-
+```markdown
+---
+title: 文章标题
+order: 10
+date: 2026-09-01
+reviewedAt: 2026-09-01
+category: 校园生活
+author:
+  - name: 你的名字
+description: 一句话摘要，会显示在卡片上
+tags:
+  - 标签1
 ---
 
-## 四、可复用的标准流程
+# 文章标题
 
-如果要在别的学校复刻这套东西，按这 8 步走：
+正文写在这里。
+```
 
-1. **建仓库**：GitHub Desktop 发布，必须 Public（私有仓库用 Pages 要付费）
-2. **开 Pages**：Settings → Pages → Source 选 **GitHub Actions**（这步不做，首次构建必失败）
-3. **推代码**：GitHub Desktop → Push origin，Actions 自动构建
-4. **配后台**：改 `admin/config.yml` 的 `repo`，生成令牌登录（Contents + Pull requests 读写）
-5. **加 DNS**：根域名 4 条 A 记录 + www 一条 CNAME
-6. **推 CNAME**：确认 DNS 通了**之后**再推，否则站点会短暂打不开
-7. **填域名**：Pages → Custom domain → 等证书 → 勾 Enforce HTTPS
-8. **交搜索引擎**：提交 sitemap（一定在域名定下来之后做）
+3. 提交推送，1 分钟后自动上线
 
-> 顺序不能乱：第 2 步漏了必失败，第 5、6 步顺序反了会掉线。
+> 侧边栏、分类页、搜索索引都会自动更新，**不需要改任何配置文件**。
+> 加一个文章不会动导航；想加的是**整个栏目**，才需要改 `docs/.vitepress/sections.ts`（只改这一个文件就够）。
 
----
+### 改样式 / 文案
 
-## 五、踩过的坑（10 条，最有价值的部分）
+| 想改什么 | 改哪里 |
+| --- | --- |
+| 主色（深红） | `docs/.vitepress/theme/styles/custom.css` 顶部 `--vp-c-brand-1` |
+| 首页大标题与按钮 | `docs/index.md` 的 `hero` 部分 |
+| 页脚免责声明 | `docs/.vitepress/config.mts` 的 `footer` |
+| 栏目清单 / 顺序 | `docs/.vitepress/sections.ts` |
+| 分享卡片图片 | 改 `tools/make-og.py` 里的文案，然后 `python tools/make-og.py` |
 
-| # | 现象 | 原因 | 修法 | 状态 |
-| --- | --- | --- | --- | --- |
-| 1 | 构建报 `(b.date\|\|"").localeCompare is not a function` | gray-matter 把 YAML 的 `date` 解析成 **Date 对象**，不是字符串 | 归一化成字符串；且必须用 `getFullYear/getMonth/getDate` 本地取值，**不能用 `toISOString()`**（GMT+8 下会少一天） | 已修 |
-| 2 | 手机端卡片文字被切掉、页面横向溢出 | 卡片在 `.vp-doc` 内，长中文把 grid 撑出容器 | 容器和卡片加 `min-width: 0`，列宽用 `minmax(min(100%, 250px), 1fr)` | 已修 |
-| 3 | 窄屏截图看起来严重溢出 | **Windows 会把 Edge 无头窗口宽度钳制到 492px**，`--window-size=390` 只是裁切，不是真溢出 | 放一个打印 `innerWidth` 的探测页确认真实视口 | 认知修正 |
-| 4 | Hero 标题出现单字孤行 | `hero.text` 实际可用宽度约 470px（≈8 个汉字），改 CSS `max-width` 不生效 | 直接缩短文案 | 已修 |
-| 5 | 本地看文章页 404 | `python -m http.server` 不支持 cleanUrls | 用 `npm run preview` 或 `npm run dev` | 已规避 |
-| 6 | 页面上露出 `**` 星号、加粗失效 | **CommonMark 的 CJK 强调规则**：`**加粗。**紧接正文` 中闭合 `**` 前是中文标点、后接文字，不满足 right-flanking | 把标点移到星号外面：`**加粗**。紧接正文`。已全局修 5 处，并写进投稿指南 | 已修 |
-| 7 | 重建后预览服务崩溃（ENOENT 哈希资源） | 重建会替换带哈希的 JS，正在服务的进程读不到旧文件 | 重建前先停服务，或重建后重启 | 已规避 |
-| 8 | 首页 `<title>` 变成「郧中 Wiki · 郧中 Wiki」 | `titleTemplate` 会给无独立标题的首页再套一次后缀 | 首页 frontmatter 加 `title: xxx` + `titleTemplate: false` | 已修 |
-| 9 | 首次部署 Actions 报 `Get Pages site failed` | 仓库没启用 Pages | Settings → Pages → Source 选 GitHub Actions，再 Re-run。**无法自动化**：官方 `configure-pages` 的 `enablement` 参数要求非 `GITHUB_TOKEN` 的令牌 | 已修 |
-| 10 | （预防）加 CNAME 后站点打不开 | GitHub 一发现 CNAME 就把 `github.io` 301 跳到新域名，DNS 未通时全站不可达 | 顺序必须「先 DNS，后 CNAME」 | 已规避 |
+### 谁都能投稿（不需要账号权限）
 
----
+- 网站上「参与共建 → 在线投稿工具」填表 → 点「打开投稿 / 纠错表单」→ 变成一个 GitHub Issue
+- 站长在仓库 Issues 里看到、回复、整理进文章
+- 不会用 GitHub 的同学：下载 `.md` 发给群里转交，效果一样
 
-## 六、当前待办
+### 后台三种角色
 
-| 事项 | 谁做 | 阻塞点 |
+| 角色 | 能做什么 | 需要什么 |
 | --- | --- | --- |
-| 推送域名适配提交 `968de63` | 站长 | 无 |
-| 加 5 条 DNS 记录 | 站长（域名商后台） | 需要 `.wang` 实名认证通过 |
-| 确认 DNS 生效 | 我可代查 | 等上一步 |
-| 推 CNAME 文件 | 站长 | 等 DNS 生效 |
-| Pages 填域名 + 强制 HTTPS | 站长 | 等上一步 |
-| 生成令牌登录后台 | 站长 | 5 分钟，随时可做 |
+| 站长 | 发布、驳回、改配置 | 仓库所有者 |
+| 编辑 | 写稿、改稿、保存为「待审核」 | GitHub 账号 + 令牌或 OAuth |
+| 投稿者 | 提 Issue / 交文件 | 什么都不需要 |
 
 ---
 
-## 七、下一步计划
+## 5. 已完成的工作
 
-1. **完成域名切换**（当前）
-2. **提交搜索引擎**：域名定下来之后提交 sitemap 到必应/百度，接 IndexNow 主动推送
-3. **补内容**：优先补「校园地图」「食堂窗口」「作息时刻表」这类高搜索量、目前留白的页
-4. **招募编辑**：3–5 人分区负责制，跑通「编辑提交 → 站长审核」的闭环
-5. **入学季前**（每年 8 月）内容必须齐备——这是校园 Wiki 唯一确定的流量窗口
+### 阶段 0–4（摘要）
+
+- 选型 VitePress 1.6.4（稳定版，不跟 2.0 alpha）
+- 骨架：中文目录名、侧边栏自动生成、分类页自动聚合、时效提醒组件
+- 内容：7 个栏目 21 篇正文，约 2.1 万字；校史部分核对过政府/学校官网公开信息
+- 后台：Sveltia CMS + 审批流 + fork/PR 投稿
+- 上线：GitHub Actions → GitHub Pages，7 条路径全部 200
+
+### 2026-10-24 第二轮优化（10 项）
+
+| 问题 | 怎么修的 |
+| --- | --- |
+| 线上 favicon 404 | `head` 里改成 `${BASE}logo.svg`（原来写死 `/logo.svg`，子路径部署必 404） |
+| 域名三处写死且没解析 | 改成构建时推导：`SITE_URL` → `CNAME` → 仓库名 → localhost |
+| 顶栏缺「社团与活动」「常见问题」 | 导航改为从 `sections.ts` 生成，现 8 项 |
+| 没有 robots.txt、没有分享图 | 构建生成 robots；新增 `og.png` + 每页 `og:*` / `canonical` |
+| 后台拉 unpkg latest | 锁到 jsDelivr + 版本 `0.251.0` |
+| **中文搜索等于不可用** | MiniSearch 默认按空白/标点切词，改为中文二元组分词 |
+| 窄屏表格撑破页面 | 恢复 VitePress 默认的横向滚动（原来被 CSS 覆盖成 `display:table`） |
+| **本机 `npm run build` 报错** | 机器没 git 时 `spawn git ENOENT`；改成探测到 git 才启用最后更新时间 |
+| 71% 页面挂「没人核实过」 | 文案改为「细节还没有逐条核实」，保留核实入口 |
+| 贡献闭环断裂 | 新增 GitHub Issue 表单，页脚/文章页脚/投稿页/404 都有入口 |
+
+结构性改动：新增 `docs/.vitepress/sections.ts`（栏目唯一来源，以前加栏目要改 5 个文件）。
+
+### 验证方式（改代码请照做）
+
+1. **模拟 CI 跑真实构建**：`GITHUB_ACTIONS=true GITHUB_REPOSITORY=Friday402-12/yunyang-wiki`，再 `vitepress build docs`，约 3 秒；VitePress 自带死链检查，链接写错会直接失败
+2. **对产物断点检查**：favicon 前缀、og 标签、canonical、robots、后台 config 改写、中文 404、导航、sitemap 共 21 项
+3. **搜索分词实测**：默认分词搜「怎么吃」0 命中，二元组分词命中
 
 ---
 
-## 八、关键文件地图
+## 6. 还要人做的事（代码解决不了）
+
+| 优先级 | 事项 | 说明 |
+| --- | --- | --- |
+| 高 | 逐条核实 **15 篇** `needsReview` | 食堂、宿舍、作息、报到流程这些最需要准确 |
+| 高 | 「新生三十问」改郧中版 | 现在 12 处「各校不同 / 多数学校」，等于没回答 |
+| 高 | 校园地图 + 作息时间表 | 新生最需要的两样，需要现场资料 |
+| 中 | 署名人格化 | 21 篇作者全是「共建小组」，改成真实/化名个人更容易传播 |
+| 中 | 国内访问实测 | 找 3 个同学用手机流量测首屏，再决定要不要迁 Cloudflare Pages |
+| 低 | 接统计 | 现在完全不知道有没有人看、哪篇看得最多 |
+
+---
+
+## 7. 踩过的坑（精简版）
+
+| 现象 | 原因 | 解法 |
+| --- | --- | --- |
+| 构建报 `localeCompare is not a function` | YAML 的 `date` 被解析成 Date 对象 | 归一化成字符串；用 `getFullYear/getMonth/getDate`，**不能用 `toISOString()`**（GMT+8 会少一天） |
+| 手机上卡片文字被切、页面横向溢出 | 长中文把 grid 撑出容器 | 容器和卡片加 `min-width: 0`，列宽 `minmax(min(100%, 250px), 1fr)` |
+| 页面上露出 `**` 星号 | CommonMark 的 CJK 强调规则：`**加粗。**紧接正文` 不满足 right-flanking | 把标点移到星号外：`**加粗**。紧接正文` |
+| 首页标题变成「郧中 Wiki · 郧中 Wiki」 | `titleTemplate` 又套了一次 | 首页 frontmatter 加 `title` + `titleTemplate: false` |
+| 首次部署报 `Get Pages site failed` | 仓库没启用 Pages | Settings → Pages → Source 选 GitHub Actions，再 Re-run（无法自动化） |
+| 本地预览文章页 404 | `python -m http.server` 不支持 cleanUrls | 用 `npm run dev` 或 `npm run preview` |
+| 重建后预览服务崩溃 | 重建替换了带哈希的 JS | 重建前先停服务 |
+| 本机 `npm run build` 报 `spawn git ENOENT` | 机器没装 git | 已自动检测并关闭最后更新时间 |
+
+---
+
+## 8. 文件地图
 
 ```
 yunyang-wiki/
 ├─ docs/
 │  ├─ .vitepress/
-│  │  ├─ config.mts          导航、侧边栏自动生成、域名与路径自动推导
-│  │  ├─ catalog.data.ts     收集全部文章，供列表组件使用
-│  │  └─ theme/
-│  │     ├─ index.ts         注入页脚组件
-│  │     ├─ components/      ArticleList / ArticleFooter / SubmitForm
-│  │     └─ styles/          配色与排版
+│  │  ├─ config.mts          标题、域名推导、导航生成、SEO、robots、后台地址对齐
+│  │  ├─ sections.ts         ★ 栏目清单（导航/侧边栏/分类页/投稿表单的唯一来源）
+│  │  ├─ catalog.data.ts     收集全部文章给列表组件用
+│  │  └─ theme/              配色、卡片列表、文章页脚、投稿表单
 │  ├─ public/
 │  │  ├─ admin/              内容后台（index.html + config.yml）
 │  │  ├─ uploads/            后台上传的图片
+│  │  ├─ og.png              分享缩略图
 │  │  └─ CNAME               ← 域名确认后才加
+│  ├─ 404.md                 中文 404 页
 │  └─ <7 个栏目>/*.md        内容
+├─ tools/make-og.py          重新生成分享卡片
 ├─ .github/
-│  ├─ workflows/deploy.yml   PR 构建检查 + main 自动部署
-│  ├─ CODEOWNERS             PR 自动指派（默认注释，需手动启用）
-│  └─ PULL_REQUEST_TEMPLATE.md
-├─ README.md                 上线与运维手册（站长看）
-└─ PROGRESS.md               本文档（进度与复盘）
+│  ├─ workflows/deploy.yml   自动构建部署
+│  └─ ISSUE_TEMPLATE/        投稿 / 纠错表单
+├─ README.md                 上线与运维手册
+└─ PROGRESS.md               本文件
 ```
 
-**当前规模**：50 个跟踪文件、30 个 Markdown、约 1000 行代码、构建出 32 个页面。
+当前规模：31 个 Markdown、构建出 32 个页面、搜索索引 302 KB（gzip 80 KB，只在打开搜索时加载）。
 
 ---
 
-## 九、常用命令
+## 9. 常用命令
 
 ```bash
 npm install        # 首次
-npm run dev        # 本地开发，http://localhost:5173，改完自动刷新
-npm run build      # 构建到 docs/.vitepress/dist
-npm run preview    # 预览构建产物（支持 cleanUrls，别用 python -m http.server）
+npm run dev        # 本地开发 http://localhost:5173
+npm run build      # 构建并检查死链（推送前跑一次）
+npm run preview    # 预览构建产物
 ```
 
-Windows 下也可直接双击 `preview.bat`。
+Windows 也可直接双击 `preview.bat`。
 
 ---
 
-## 十、提交历史
+## 10. 给接手的人
 
-| 提交 | 时间 | 说明 |
-| --- | --- | --- |
-| `1cd4709` | 10-24 19:01 | 初始化：站点 + 后台 + 自动部署（49 文件） |
-| `8a81f04` | 10-24 19:02 | 统一换行符，保证 .bat 可双击 |
-| `5ec074a` | 10-24 19:39 | 补充 Pages 未启用的排查说明 |
-| `72ac453` | 10-24 19:51 | 修正首页标题重复、推荐位排序 |
-| `968de63` | 10-24 20:08 | 支持自定义域名，sitemap 与路径自动适配 |
-
----
-
-## 十一、给未来接手的人
-
-- **别删 `.github` 和 `.vitepress` 这两个隐藏目录**，网页拖拽上传时最容易漏，漏了站点直接打不开。
-- **改了 `config.yml` 一定记得改 `repo`**，否则后台登录后会提示仓库不存在。
-- **令牌等于仓库钥匙**：设 90 天有效期，有人退出团队立刻作废。
-- localStorage 里的令牌会一直有效，公共电脑上用完记得退出。
-- 内容最大的风险不是没人写，而是**没人维护导致信息过期**。页面上的黄条就是在提醒这件事，看到就去核实一下。
-- 站长毕业前一定要**转移仓库所有权或指定共同维护者**，否则站会烂掉——这是所有校园 Wiki 的共同死法。
+- **别删 `.github` 和 `.vitepress` 两个隐藏目录**，网页拖拽上传最容易漏，漏了站点直接打不开
+- **令牌等于仓库钥匙**：设 90 天有效期，有人退出立刻作废；公共电脑用完记得退出
+- **改域名只需要动 DNS 和 CNAME 文件**，代码会自动适配；但顺序一定是「先 DNS，后 CNAME」
+- 内容最大的风险不是没人写，而是**没人维护导致信息过期**。页面上的黄条就是在提醒这件事
+- 站长毕业前一定要**转移仓库所有权或指定共同维护者**——这是所有校园 Wiki 的共同死法

@@ -8,6 +8,9 @@ backend:
   branch: main
   # 允许没有仓库权限的人提交（会自动 fork 并开 PR），你审核后才合并
   open_authoring: true
+  # 必填：不加这一行，Sveltia 会报配置警告，并向编辑索取「所有仓库」的 repo 权限。
+  # 仓库是公开的，用 public_repo 就够，编辑授权时心里也踏实。
+  auth_scope: public_repo
   # 部署了 OAuth 中转后才填这一行，填了体验最好；用令牌登录则留空
   # base_url: https://sveltia-cms-auth.你的账号.workers.dev
 
@@ -16,9 +19,12 @@ publish_mode: editorial_workflow
 
 locale: zh_Hans
 
-site_url: https://yunyangwiki.wang/
-display_url: yunyangwiki.wang
-logo_url: https://yunyangwiki.wang/logo.svg
+# ⚠️ 下面三行由构建自动改写（见 docs/.vitepress/config.mts 的 buildEnd）。
+# 绑定了自定义域名后，站点地址会自动变成 https://你的域名/，这里不用手动改。
+# 只有本地 `npm run dev` 时才会用到这里写的值。
+site_url: https://friday402-12.github.io/yunyang-wiki/
+display_url: friday402-12.github.io/yunyang-wiki
+logo_url: https://friday402-12.github.io/yunyang-wiki/logo.svg
 
 # 图片存放位置。注意：图片会进仓库，单张请压到 500KB 以内
 media_folder: docs/public/uploads

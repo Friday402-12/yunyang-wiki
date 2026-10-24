@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "description": "十堰市郧阳中学校园知识库",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vitepress dev docs",
     "build": "vitepress build docs",

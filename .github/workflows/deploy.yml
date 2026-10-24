@@ -29,10 +29,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
+      # 用 npm ci 而不是 npm install：锁文件怎么写的就装什么，构建结果可重现
       - name: 安装依赖
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
+      # VitePress 构建时自带死链检查，站内链接写错会直接让这一步失败
       - name: 构建站点
         run: npm run build
 

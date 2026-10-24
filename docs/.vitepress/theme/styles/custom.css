@@ -40,10 +40,28 @@
   text-underline-offset: 3px;
 }
 
+/*
+ * 表格：VitePress 默认是 display:block + overflow-x:auto（窄屏可横向滚动）。
+ * 之前这里被改成 display:table + width:100%，等于关掉了横向滚动，
+ * 手机上五列表格会把整页撑宽。现在只在宽屏铺满，窄屏保留滚动。
+ */
 .vp-doc table {
-  display: table;
-  width: 100%;
+  border-collapse: collapse;
   font-size: 14px;
+}
+
+@media (min-width: 960px) {
+  .vp-doc table {
+    display: table;
+    width: 100%;
+  }
+}
+
+@media (max-width: 959px) {
+  .vp-doc table {
+    display: block;
+    overflow-x: auto;
+  }
 }
 
 .vp-doc tr:nth-child(2n) {
@@ -88,8 +106,26 @@
   font-size: 13px;
 }
 
+.VPFooter .message a {
+  color: var(--vp-c-brand-1);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .VPSidebarItem.level-1 .text {
   font-weight: 500;
+}
+
+/*
+ * 顶栏现在有 8 个入口（全部文章 + 6 个栏目 + 参与共建），
+ * 中等宽度屏幕收紧一点间距，避免挤成一团或换行。
+ */
+@media (min-width: 768px) and (max-width: 1180px) {
+  .VPNavBarMenuLink,
+  .VPNavBarMenuGroup .text {
+    padding: 0 8px;
+    font-size: 13.5px;
+  }
 }
 
 @media (max-width: 640px) {

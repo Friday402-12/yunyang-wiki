@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useData } from 'vitepress'
+import { ISSUE_NEW_URL } from '../../sections.ts'
 
-const { frontmatter } = useData()
+const { frontmatter, page } = useData()
 
 const authors = computed<string[]>(() => {
   const raw = frontmatter.value.author
@@ -33,26 +34,28 @@ const staleDays = computed(() => {
 const isStale = computed(() => staleDays.value > 365)
 const isUnverified = computed(() => frontmatter.value.needsReview === true)
 
-const show = computed(
-  () =>
-    authors.value.length > 0 ||
-    isStale.value ||
-    isUnverified.value ||
-    Boolean(frontmatter.value.tags),
-)
-
 const tags = computed<string[]>(() => {
   const raw = frontmatter.value.tags
   if (!raw) return []
   return Array.isArray(raw) ? raw : [String(raw)]
+})
+
+/** 只有带 date 的文章才显示页脚；栏目首页、分类页不显示 */
+const show = computed(() => Boolean(frontmatter.value.date))
+
+/** 「这条信息有误 / 过时」→ 预填标题的 GitHub Issue，不需要任何后端 */
+const feedbackUrl = computed(() => {
+  const path = page.value.relativePath.replace(/index\.md$/, '').replace(/\.md$/, '')
+  const title = `[反馈] ${path}`
+  return `${ISSUE_NEW_URL}&title=${encodeURIComponent(title)}`
 })
 </script>
 
 <template>
   <div v-if="show" class="wiki-article-footer">
     <div v-if="isUnverified" class="wiki-banner wiki-banner-warn">
-      <strong>这条内容还没有人核实过。</strong>
-      如果你了解真实情况，欢迎在页面上方找到「帮我们改一改」，或到「参与共建」了解投稿方式。
+      <strong>这篇是同学整理的，细节还没有逐条核实过。</strong>
+      如果和你了解的情况不一样，麻烦点下面的链接告诉我们——写错很正常，一直错着才可惜。
     </div>
 
     <div v-else-if="isStale" class="wiki-banner wiki-banner-warn">
@@ -73,6 +76,11 @@ const tags = computed<string[]>(() => {
 
     <div v-if="tags.length" class="wiki-tags">
       <span v-for="t in tags" :key="t" class="wiki-tag"># {{ t }}</span>
+    </div>
+
+    <div class="wiki-feedback">
+      <span>这一页有错、或者已经过时了？</span>
+      <a :href="feedbackUrl" target="_blank" rel="noopener">花一分钟告诉我们 →</a>
     </div>
   </div>
 </template>
@@ -133,5 +141,27 @@ const tags = computed<string[]>(() => {
 .wiki-tag {
   color: var(--vp-c-brand-1);
   font-size: 12px;
+}
+
+.wiki-feedback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--vp-c-divider);
+  color: var(--vp-c-text-3);
+  font-size: 12.5px;
+}
+
+.wiki-feedback a {
+  color: var(--vp-c-brand-1);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.wiki-feedback a:hover {
+  text-decoration: underline;
 }
 </style>

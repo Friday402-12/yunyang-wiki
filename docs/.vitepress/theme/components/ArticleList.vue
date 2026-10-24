@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { withBase } from 'vitepress'
 import { data as articles } from '../../catalog.data'
+import { SECTION_ORDER } from '../../sections.ts'
 
 const props = defineProps<{
   only?: string
@@ -16,18 +17,8 @@ const pool = computed(() =>
     : articles,
 )
 
-const ORDER = [
-  '走进郧中',
-  '校园生活',
-  '学习指南',
-  '升学之路',
-  '社团与活动',
-  '常见问题',
-  '参与共建',
-]
-
 function rank(name: string) {
-  const i = ORDER.indexOf(name)
+  const i = SECTION_ORDER.indexOf(name)
   return i < 0 ? 99 : i
 }
 

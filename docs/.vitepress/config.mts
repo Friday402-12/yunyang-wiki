@@ -1,9 +1,25 @@
-import { readdirSync, readFileSync, existsSync } from 'node:fs'
+import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
 import { resolve, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { defineConfig, type DefaultTheme } from 'vitepress'
+import { defineConfig, type DefaultTheme, type HeadConfig, type SiteConfig } from 'vitepress'
+import { SECTIONS, REPO_SLUG, REPO_URL } from './sections.ts'
 
 const docsRoot = resolve(fileURLToPath(new URL('..', import.meta.url)))
+
+/**
+ * 本机没有 git（例如只用 GitHub Desktop 的同学）时，lastUpdated 会让构建直接崩：
+ *   build error: spawn git ENOENT
+ * 这里先探测一次，没有 git 就关掉「最后更新时间」，本地照样能 build / preview。
+ * CI 上有 git，线上仍然显示更新时间。
+ */
+const HAS_GIT = (() => {
+  try {
+    return spawnSync('git', ['--version'], { stdio: 'ignore' }).status === 0
+  } catch {
+    return false
+  }
+})()
 
 /**
  * 部署路径自动判断，正常情况下你不需要改这里：
@@ -36,34 +52,33 @@ const BASE =
     : '/')
 
 /**
- * 站点地址自动推导，优先级：
- * 1. 环境变量 SITE_URL
+ * 站点地址，优先级：
+ * 1. 环境变量 SITE_URL（手动指定，最优先）
  * 2. docs/public/CNAME 里的自定义域名
- * 3. GitHub 仓库推导出的 https://用户名.github.io/仓库名/
+ * 3. GitHub 仓库推导出的 https://用户名.github.io
+ * 4. 本地开发 http://localhost:5173
+ *
+ * ⚠️ ORIGIN 只到域名（不含仓库名），仓库名由 BASE 负责拼，
+ *    避免出现 /yunyang-wiki/yunyang-wiki/ 这种双前缀。
+ *    SITE 一定以 / 结尾，可以直接拼 sitemap.xml、og.png。
  */
-const SITE =
+const ORIGIN = (
   process.env.SITE_URL ??
   (hasCname
     ? `https://${CNAME}`
-    : owner && repoName
-      ? repoName.endsWith('.github.io')
-        ? `https://${owner}.github.io/`
-        : `https://${owner}.github.io/${repoName}/`
-      : 'https://yunyangwiki.wang')
+    : owner
+      ? `https://${owner}.github.io`
+      : 'http://localhost:5173')
+).replace(/\/+$/, '')
+
+const SITE = `${ORIGIN}${BASE}`
+const IS_LOCAL = /^https?:\/\/(localhost|127\.0\.0\.1)/.test(ORIGIN)
+
+/** 把站内绝对路径补上 base；head 里的 icon / 图片必须用它，否则子路径部署会 404 */
+const withBase = (p: string) => `${BASE}${p.replace(/^\/+/, '')}`
 
 /** 用于页面底部「帮我们改一改」的编辑链接 */
-const REPO_SLUG =
-  process.env.GITHUB_REPOSITORY ?? 'friday402-12/yunyang-wiki'
-
-const SECTIONS = [
-  { dir: '走进郧中', text: '走进郧中' },
-  { dir: '校园生活', text: '校园生活' },
-  { dir: '学习指南', text: '学习指南' },
-  { dir: '升学之路', text: '升学之路' },
-  { dir: '社团与活动', text: '社团与活动' },
-  { dir: '常见问题', text: '常见问题' },
-  { dir: '参与共建', text: '参与共建' },
-]
+const REPO_SLUG_ENV = process.env.GITHUB_REPOSITORY ?? REPO_SLUG
 
 function readMeta(file: string, fallback: string) {
   const meta = { title: fallback, order: 999 }
@@ -109,6 +124,44 @@ function buildSidebar(): DefaultTheme.Sidebar {
   return map
 }
 
+/**
+ * 中文分词：MiniSearch 默认只按空白和标点切词，
+ * 「食堂怎么吃」会变成一个整 token，搜「怎么吃」永远搜不到。
+ * 这里把连续中文切成二元组（食堂 / 堂怎 / 怎么 / 么吃），单字保留。
+ */
+function cjkTokenize(text: string): string[] {
+  const out: string[] = []
+  for (const seg of String(text).split(/([\u4e00-\u9fff]+)/)) {
+    if (!seg) continue
+    if (/^[\u4e00-\u9fff]+$/.test(seg)) {
+      if (seg.length === 1) {
+        out.push(seg)
+        continue
+      }
+      for (let i = 0; i < seg.length - 1; i++) out.push(seg.slice(i, i + 2))
+    } else {
+      for (const t of seg.split(/[\s\p{P}\p{Z}]+/u)) if (t) out.push(t.toLowerCase())
+    }
+  }
+  return out
+}
+
+/**
+ * 后台 config.yml 里的 site_url / logo_url 必须和实际部署地址一致，
+ * 否则 Sveltia 的 OAuth 回跳与 logo 都会指向不存在的域名。
+ * 以前靠人肉维护，换域名必翻车；现在构建结束时自动改写。
+ */
+function patchAdminConfig(outDir: string) {
+  const file = join(outDir, 'admin', 'config.yml')
+  if (!existsSync(file)) return
+  const displayUrl = SITE.replace(/^https?:\/\//, '').replace(/\/+$/, '')
+  const next = readFileSync(file, 'utf-8')
+    .replace(/^site_url:.*$/m, `site_url: ${SITE}`)
+    .replace(/^display_url:.*$/m, `display_url: ${displayUrl}`)
+    .replace(/^logo_url:.*$/m, `logo_url: ${SITE}logo.svg`)
+  writeFileSync(file, next, 'utf-8')
+}
+
 export default defineConfig({
   base: BASE,
   lang: 'zh-CN',
@@ -117,22 +170,60 @@ export default defineConfig({
   description:
     '十堰市郧阳中学学生共建的校园知识库。把散落在群聊里的经验，整理成下一位同学用得上的指南。',
   cleanUrls: true,
-  lastUpdated: true,
+  lastUpdated: HAS_GIT,
   srcExclude: ['**/README.md'],
 
   head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: withBase('logo.svg') }],
+    ['link', { rel: 'apple-touch-icon', href: withBase('logo.svg') }],
     ['meta', { name: 'theme-color', content: '#8C1F28' }],
     ['meta', { name: 'author', content: '郧中 Wiki 共建小组' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: '郧中 Wiki' }],
+    ['meta', { property: 'og:locale', content: 'zh_CN' }],
+    ['meta', { property: 'og:image', content: `${SITE}og.png` }],
+    ['meta', { property: 'og:image:width', content: '1200' }],
+    ['meta', { property: 'og:image:height', content: '630' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'format-detection', content: 'telephone=no' }],
   ],
 
-  sitemap: { hostname: SITE },
+  // 本地构建不生成带 localhost 的 sitemap
+  sitemap: IS_LOCAL ? false : { hostname: SITE },
 
   markdown: {
     image: { lazyLoading: true },
+  },
+
+  /** 每页补 canonical 与 og 信息，分享到微信群/QQ 时才有标题和摘要 */
+  transformHead({ pageData, title, description }) {
+    const rel = pageData.relativePath.replace(/index\.md$/, '').replace(/\.md$/, '')
+    if (rel === '404') return []
+
+    const canonical = encodeURI(`${SITE}${rel}`)
+    const tags: HeadConfig[] = [
+      ['link', { rel: 'canonical', href: canonical }],
+      ['meta', { property: 'og:url', content: canonical }],
+      ['meta', { property: 'og:title', content: title }],
+    ]
+    if (description) {
+      tags.push(['meta', { property: 'og:description', content: description }])
+    }
+    return tags
+  },
+
+  /** 构建结束后生成 robots.txt，并把后台配置里的地址对齐到真实域名 */
+  buildEnd(siteConfig: SiteConfig) {
+    const robots = [
+      'User-agent: *',
+      'Allow: /',
+      'Disallow: /admin/',
+      '',
+      `Sitemap: ${SITE}sitemap.xml`,
+      '',
+    ].join('\n')
+    writeFileSync(join(siteConfig.outDir, 'robots.txt'), robots, 'utf-8')
+    patchAdminConfig(siteConfig.outDir)
   },
 
   themeConfig: {
@@ -141,10 +232,10 @@ export default defineConfig({
 
     nav: [
       { text: '全部文章', link: '/categories/' },
-      { text: '走进郧中', link: '/走进郧中/' },
-      { text: '校园生活', link: '/校园生活/' },
-      { text: '学习指南', link: '/学习指南/' },
-      { text: '升学之路', link: '/升学之路/' },
+      ...SECTIONS.filter((s) => s.dir !== '参与共建').map((s) => ({
+        text: s.text,
+        link: `/${s.dir}/`,
+      })),
       {
         text: '参与共建',
         items: [
@@ -162,6 +253,11 @@ export default defineConfig({
     search: {
       provider: 'local',
       options: {
+        miniSearch: {
+          options: {
+            tokenize: cjkTokenize,
+          },
+        },
         translations: {
           button: { buttonText: '搜索文章', buttonAriaLabel: '搜索文章' },
           modal: {
@@ -182,13 +278,15 @@ export default defineConfig({
     lastUpdated: { text: '最后更新', formatOptions: { dateStyle: 'medium' } },
 
     editLink: {
-      pattern: `https://github.com/${REPO_SLUG}/edit/main/docs/:path`,
+      pattern: `https://github.com/${REPO_SLUG_ENV}/edit/main/docs/:path`,
       text: '发现错误？帮我们改一改',
     },
 
     footer: {
       message:
-        '本站由郧中校友与学生自发维护，<strong>与学校官方无关</strong>，内容仅供参考，请以学校正式通知为准。<br/>除特别注明外，内容采用 CC BY-NC-SA 4.0 协议共享。',
+        `本站由郧中校友与学生自发维护，<strong>与学校官方无关</strong>，内容仅供参考，请以学校正式通知为准。` +
+        `<br/>除特别注明外，内容采用 CC BY-NC-SA 4.0 协议共享。` +
+        `<br/><a href="${REPO_URL}/issues/new?template=content-issue.yml" target="_blank" rel="noopener">发现错误、信息过时，或有想补充的 → 点这里告诉我们</a>`,
       copyright: 'Built with care by 郧中人',
     },
 

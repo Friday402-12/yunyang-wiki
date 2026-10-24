@@ -1,4 +1,5 @@
 import { createContentLoader } from 'vitepress'
+import { SECTION_DIRS } from './sections.ts'
 
 export interface WikiArticle {
   url: string
@@ -14,8 +15,8 @@ export interface WikiArticle {
 declare const data: WikiArticle[]
 export { data }
 
-const SECTION_INDEX =
-  /^\/(走进郧中|校园生活|学习指南|升学之路|社团与活动|常见问题|参与共建)\/$/
+/** 栏目首页（例如 /校园生活/）由栏目本身承载，不当作文章收录 */
+const SECTION_INDEX = new RegExp(`^/(${SECTION_DIRS.join('|')})/$`)
 
 function toArray(value: unknown): string[] {
   if (!value) return []
@@ -48,6 +49,7 @@ export default createContentLoader('**/*.md', {
       .filter(({ url, frontmatter }) => {
         if (frontmatter.draft === true) return false
         if (url === '/' || url === '/index.html') return false
+        if (url.startsWith('/404')) return false
         if (SECTION_INDEX.test(url)) return false
         if (url.startsWith('/categories')) return false
         if (url.startsWith('/tags')) return false

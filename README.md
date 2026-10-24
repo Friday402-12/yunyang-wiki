@@ -155,10 +155,23 @@ yunyangwiki.wang
 
 | 位置 | 改什么 | 什么时候改 |
 | --- | --- | --- |
-| `docs/public/admin/config.yml` 第 6 行 | `repo:` 改成你的 `用户名/仓库名` | 启用内容后台时 |
-| `docs/.vitepress/config.mts` 的 `nav` | 顶部导航文字 | 想调整栏目时 |
-| `docs/.vitepress/config.mts` 的 `footer` | 页脚声明 | 想改文案时 |
+| `docs/.vitepress/sections.ts` | **栏目清单**（增删栏目、改栏目名只改这一个文件） | 想调整栏目时 |
+| `docs/public/admin/config.yml` 第 7 行 | `repo:` 改成你的 `用户名/仓库名` | 换仓库时 |
 | `.github/CODEOWNERS` | 去掉最后一行的 `#` 并把 `your-name` 换成你的用户名 | 想让 PR 自动指派给你时 |
+| `tools/make-og.py` 里的文案 | 分享卡片（微信群里的缩略图）上的字 | 想换分享图时 |
+
+> 顶部导航和侧边栏都是从 `sections.ts` **自动生成**的，不用再去 `config.mts` 里手改 `nav`。
+
+### 已经自动处理、不用你管的事
+
+下面这些以前容易翻车，现在都是构建时自动推导，换域名不用改任何配置：
+
+- **图标路径**：`/logo.svg` 会自动带上 `/仓库名/` 前缀（以前子路径部署时 favicon 是 404）
+- **分享信息**：每页自动生成 `og:title` / `og:description` / `og:url` / `canonical`，分享到群里才有缩略图
+- **robots.txt**：构建时生成，自动禁止收录 `/admin/`，sitemap 地址跟着域名走
+- **后台地址**：`admin/config.yml` 里的 `site_url` / `logo_url` 在构建时改写为真实域名
+- **404 页**：`docs/404.md` 是中文的，坏了链接的人能看到回首页的入口
+- **没有 git 也能构建**：本机没装 git 时自动关闭「最后更新时间」，不会再报 `spawn git ENOENT`
 
 ---
 
@@ -220,6 +233,10 @@ tags:
 
 填表单 → 下载 `.md` 文件 → 发给管理员 → 管理员丢进对应目录。
 
+**更好的方式**：填完直接点「打开投稿 / 纠错表单」，内容会变成一个 GitHub Issue，
+小组在仓库的 Issues 里就能看到、能回复，不用在微信里翻聊天记录。
+不会用 GitHub 的同学仍然走「下载文件 → 发群」这条路。
+
 **不需要注册、不需要会 Markdown、不需要懂 Git。**
 
 ---
@@ -238,6 +255,14 @@ npm run dev
 Windows 用户也可以直接双击 `preview.bat`。
 
 改文件会自动刷新，适合调试样式。
+
+**推送前先跑一次构建**，站内死链、路径错误会在这一步直接报错：
+
+```bash
+npm run build
+```
+
+> 这一步不需要 git。本机没装 git 时会自动跳过「最后更新时间」，不会报错。
 
 ---
 
@@ -294,24 +319,33 @@ Windows 用户也可以直接双击 `preview.bat`。
 yunyang-wiki/
 ├─ docs/
 │  ├─ .vitepress/
-│  │  ├─ config.mts          网站配置（导航、标题、域名）
+│  │  ├─ config.mts          网站配置（标题、域名、导航自动生成、SEO、robots）
+│  │  ├─ sections.ts         ★ 栏目清单（导航/侧边栏/分类页/投稿表单的唯一来源）
 │  │  ├─ catalog.data.ts     自动收集所有文章
 │  │  └─ theme/
 │  │     ├─ index.ts
-│  │     ├─ components/      卡片列表、作者栏、投稿表单
-│  │     └─ styles/          配色
-│  ├─ public/                图片、logo、CNAME
+│  │     ├─ components/      卡片列表、文章页脚（含「这条有误」反馈）、投稿表单
+│  │     └─ styles/          配色与排版
+│  ├─ public/                静态资源，原样复制到网站根目录
 │  │  ├─ admin/              内容后台（index.html + config.yml）
-│  │  └─ uploads/            后台传的图片存这里
+│  │  ├─ uploads/            后台传的图片存这里
+│  │  ├─ og.png              分享缩略图（群里转发时显示的那张）
+│  │  └─ CNAME               ← 域名确认后才加
 │  ├─ index.md               首页
+│  ├─ 404.md                 404 页（中文）
 │  ├─ categories/index.md    全部文章页
-│  ├─ 走进郧中/w│  ├─ 校园生活/
+│  ├─ 走进郧中/
+│  ├─ 校园生活/
 │  ├─ 学习指南/
 │  ├─ 升学之路/
 │  ├─ 社团与活动/
 │  ├─ 常见问题/
 │  └─ 参与共建/
-├─ .github/workflows/deploy.yml   自动部署
+├─ tools/
+│  └─ make-og.py             重新生成分享卡片（改完文案跑一次）
+├─ .github/
+│  ├─ workflows/deploy.yml   自动部署
+│  └─ ISSUE_TEMPLATE/        投稿与纠错表单（网页上直接填，无需会 Git）
 ├─ package.json
 └─ preview.bat
 ```

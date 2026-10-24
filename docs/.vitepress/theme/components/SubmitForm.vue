@@ -1,15 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { SECTIONS } from '../../sections.ts'
 
-const CATEGORIES = [
-  '走进郧中',
-  '校园生活',
-  '学习指南',
-  '升学之路',
-  '社团与活动',
-  '常见问题',
-  '参与共建',
-]
+const CATEGORIES = SECTIONS.map((s) => s.dir)
 
 const title = ref('')
 const category = ref(CATEGORIES[0])

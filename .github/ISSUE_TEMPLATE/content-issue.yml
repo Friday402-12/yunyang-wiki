@@ -1,0 +1,55 @@
+name: 内容纠错 / 补充
+description: 指出某一页的错误、过时信息，或者提供你想补充的内容。不需要会技术。
+title: "[反馈] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        谢谢你愿意花时间纠错。**写错很正常，一直错着才可惜。**
+
+        填完直接提交即可，不需要会 Git，也不需要改任何文件。如果你连 GitHub 账号都没有，可以把内容发到班级群里转给 Wiki 小组。
+
+  - type: input
+    id: page
+    attributes:
+      label: 哪一页
+      description: 贴页面地址，或者写「栏目 + 标题」
+      placeholder: 例如：校园生活 / 食堂怎么吃
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 哪里不对
+      description: 直接说事实，不用客气
+      placeholder: 例如：二楼窗口 2026 年秋季已经改成自选餐，不是排队打菜了
+    validations:
+      required: true
+
+  - type: textarea
+    id: correct
+    attributes:
+      label: 实际情况是（可选）
+      description: 不确定也可以留空，指出问题本身就已经很有用
+    validations:
+      required: false
+
+  - type: input
+    id: source
+    attributes:
+      label: 你的信息来源（可选）
+      description: 帮我们判断这条信息可不可靠
+      placeholder: 例如：本人 2026 级在读 / 班主任通知 / 学校官网
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 内容里没有他人的隐私（电话、住址、成绩、身份证）
+          required: true
+        - label: 没有对具体老师的负面评价
+          required: true
