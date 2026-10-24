@@ -7,7 +7,14 @@ const props = defineProps<{
   only?: string
   limit?: number
   latest?: number
+  exclude?: string[]
 }>()
+
+const pool = computed(() =>
+  props.exclude?.length
+    ? articles.filter((a) => !props.exclude!.includes(a.category))
+    : articles,
+)
 
 const ORDER = [
   '走进郧中',
@@ -27,12 +34,12 @@ function rank(name: string) {
 const groups = computed(() => {
   if (props.latest) return []
 
-  const pool = props.only
-    ? articles.filter((a) => a.category === props.only)
-    : articles
+  const base = props.only
+    ? pool.value.filter((a) => a.category === props.only)
+    : pool.value
 
   const map = new Map<string, typeof articles>()
-  for (const a of pool) {
+  for (const a of base) {
     const key = a.category || '未分类'
     if (!map.has(key)) map.set(key, [])
     map.get(key)!.push(a)
@@ -50,7 +57,7 @@ const groups = computed(() => {
 })
 
 const latestItems = computed(() =>
-  props.latest ? articles.slice(0, props.latest) : [],
+  props.latest ? pool.value.slice(0, props.latest) : [],
 )
 
 function fmt(date: string) {

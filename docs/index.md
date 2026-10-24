@@ -1,5 +1,7 @@
 ---
 layout: home
+title: 郧中 Wiki · 郧阳中学校园知识库
+titleTemplate: false
 
 hero:
   name: 郧中 Wiki
@@ -44,7 +46,7 @@ features:
 
 ## 最新收录
 
-<ArticleList :latest="4" />
+<ArticleList :latest="4" :exclude="['参与共建']" />
 
 <div class="home-more">
 
