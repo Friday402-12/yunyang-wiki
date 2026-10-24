@@ -9,6 +9,8 @@ const props = defineProps<{
   limit?: number
   latest?: number
   exclude?: string[]
+  /** 栏目为空时显示的引导文案 */
+  empty?: string
 }>()
 
 const pool = computed(() =>
@@ -51,6 +53,15 @@ const latestItems = computed(() =>
   props.latest ? pool.value.slice(0, props.latest) : [],
 )
 
+/** 空栏目：不给一张白纸，而是说清「这里缺什么」 */
+const isEmpty = computed(() =>
+  props.latest
+    ? latestItems.value.length === 0
+    : groups.value.reduce((n, g) => n + g.total, 0) === 0,
+)
+
+const defaultEmpty = '与其先写一篇泛泛而谈的攻略，不如等一个真的知道细节的人。'
+
 function fmt(date: string) {
   if (!date) return ''
   return date.slice(0, 10).replace(/-/g, '.')
@@ -59,6 +70,14 @@ function fmt(date: string) {
 
 <template>
   <div class="wiki-catalog">
+    <div v-if="isEmpty" class="wiki-empty">
+      <p class="wiki-empty-title">这一栏正在征集中</p>
+      <p class="wiki-empty-desc">{{ empty || defaultEmpty }}</p>
+      <a class="wiki-empty-link" :href="withBase('/参与共建/投稿工具')">
+        知道细节的同学，来写第一篇 →
+      </a>
+    </div>
+
     <div v-if="latestItems.length" class="wiki-cards">
       <a
         v-for="a in latestItems"
@@ -193,5 +212,50 @@ function fmt(date: string) {
 .wiki-cat {
   color: var(--vp-c-brand-1);
   font-weight: 500;
+}
+
+.wiki-empty {
+  border: 1px dashed var(--vp-c-divider);
+  border-radius: 12px;
+  padding: 28px 24px;
+  background: var(--vp-c-bg-soft);
+}
+
+.wiki-empty-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+
+.wiki-empty-title::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--vp-c-brand-1);
+  vertical-align: middle;
+}
+
+.wiki-empty-desc {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: var(--vp-c-text-2);
+}
+
+.wiki-empty-link {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+}
+
+.wiki-empty-link:hover {
+  text-decoration: underline;
 }
 </style>

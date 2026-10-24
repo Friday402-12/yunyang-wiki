@@ -6,10 +6,10 @@ titleTemplate: false
 hero:
   name: 郧中 Wiki
   text: 在郧中，少走弯路
-  tagline: 十堰市郧阳中学学生共建的校园知识库。把散落在群聊里的经验，整理成下一位同学用得上的指南。
+  tagline: 十堰市郧阳中学学生共建的校园知识库。只写别的学校写不出来的那一部分。
   actions:
     - theme: brand
-      text: 新生从这里开始
+      text: 先看校史
       link: /走进郧中/
     - theme: alt
       text: 浏览全部文章
@@ -17,25 +17,25 @@ hero:
 
 features:
   - title: 走进郧中
-    details: 从报到第一天到熟悉校园。校史、报到流程、部门电话，一次说清。
+    details: 校史与校训已核对整理。报到流程、部门联系方式正在重新核实。
     link: /走进郧中/
-    linkText: 开始了解
+    linkText: 先看校史
   - title: 校园生活
-    details: 食堂怎么吃、宿舍怎么住、作息怎么排。过日子的事，都在这里。
+    details: 食堂、宿舍、作息、交通——还在等真正在郧中过日子的人来写。
     link: /校园生活/
-    linkText: 看看日常
+    linkText: 正在征集
   - title: 学习指南
-    details: 分班、月考、选科、竞赛。三年里最关键的那些岔路口。
+    details: 分班、月考、选科、竞赛——等具体到本校节奏的经验。
     link: /学习指南/
-    linkText: 了解学习
+    linkText: 正在征集
   - title: 升学之路
-    details: 高考基本盘、强基计划、志愿填报。把复杂的规则讲成人话。
+    details: 通用规则网上都有，缺的是本校这几年的真实数据。
     link: /升学之路/
-    linkText: 规划升学
+    linkText: 正在征集
   - title: 社团与活动
-    details: 有哪些社团、什么时候招新、校园活动怎么参加。
+    details: 缺一份真实的社团名单：谁在带、哪天招新、每周占多少时间。
     link: /社团与活动/
-    linkText: 找组织
+    linkText: 正在征集
   - title: 参与共建
     details: 你的一句话，可能帮到素未谋面的学弟学妹。不会技术也能贡献。
     link: /参与共建/
@@ -47,6 +47,12 @@ features:
 ## 最新收录
 
 <ArticleList :latest="4" :exclude="['参与共建']" />
+
+::: info 为什么只剩这么几篇
+之前那批「食堂怎么吃」「错题本怎么用」的文章，因为**放在哪所学校都成立**，已经全部撤下。
+
+现在只保留核对过的内容，其余栏目等真实的校园信息——**宁可少，不要错。**
+:::
 
 <div class="home-more">
 

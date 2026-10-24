@@ -71,7 +71,7 @@ d.text((132, 310), "在郧中，少走弯路", font=f_text, fill=(255, 219, 208)
 d.line([(132, 424), (1068, 424)], fill=(212, 132, 138), width=2)
 
 d.text((132, 454), "十堰市郧阳中学 · 学生共建的校园知识库", font=f_small, fill=(246, 205, 200))
-d.text((132, 500), "食堂 / 宿舍 / 选科 / 高考 / 社团，一次说清", font=f_small, fill=(214, 150, 152))
+d.text((132, 500), "只写只有郧中人知道的那一部分", font=f_small, fill=(214, 150, 152))
 
 img.convert("RGB").save(OUT, "PNG", optimize=True)
 print("saved", OUT, img.size, os.path.getsize(OUT) // 1024, "KB")
