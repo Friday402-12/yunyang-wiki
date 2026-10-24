@@ -16,9 +16,9 @@ publish_mode: editorial_workflow
 
 locale: zh_Hans
 
-site_url: https://friday402-12.github.io/yunyang-wiki/ # ← 换成你的正式网址
-display_url: friday402-12.github.io/yunyang-wiki
-logo_url: https://friday402-12.github.io/yunyang-wiki/logo.svg
+site_url: https://yunyangwiki.wang/
+display_url: yunyangwiki.wang
+logo_url: https://yunyangwiki.wang/logo.svg
 
 # 图片存放位置。注意：图片会进仓库，单张请压到 500KB 以内
 media_folder: docs/public/uploads

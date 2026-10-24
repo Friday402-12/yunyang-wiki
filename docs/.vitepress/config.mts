@@ -13,7 +13,18 @@ const docsRoot = resolve(fileURLToPath(new URL('..', import.meta.url)))
  */
 const owner = process.env.GITHUB_REPOSITORY?.split('/')[0]
 const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1]
-const hasCname = existsSync(join(docsRoot, 'public', 'CNAME'))
+
+/** 读 docs/public/CNAME：一旦绑定了自定义域名，站点就走根路径、sitemap 也用这个域名 */
+function readCname(): string {
+  try {
+    const p = join(docsRoot, 'public', 'CNAME')
+    if (existsSync(p)) return readFileSync(p, 'utf-8').trim()
+  } catch {}
+  return ''
+}
+
+const CNAME = readCname()
+const hasCname = CNAME !== ''
 
 const BASE =
   process.env.VITEPRESS_BASE ??
@@ -25,18 +36,20 @@ const BASE =
     : '/')
 
 /**
- * 站点地址也会自动推导：
- * - 优先用环境变量 SITE_URL（绑了自己的域名时在仓库里设一个即可）
- * - 否则按 GitHub 仓库推导成 https://用户名.github.io/仓库名/
- * - 本地开发时用下面的备用值，不影响构建
+ * 站点地址自动推导，优先级：
+ * 1. 环境变量 SITE_URL
+ * 2. docs/public/CNAME 里的自定义域名
+ * 3. GitHub 仓库推导出的 https://用户名.github.io/仓库名/
  */
 const SITE =
   process.env.SITE_URL ??
-  (owner && repoName
-    ? repoName.endsWith('.github.io')
-      ? `https://${owner}.github.io/`
-      : `https://${owner}.github.io/${repoName}/`
-    : 'https://wiki.yyhs.example')
+  (hasCname
+    ? `https://${CNAME}`
+    : owner && repoName
+      ? repoName.endsWith('.github.io')
+        ? `https://${owner}.github.io/`
+        : `https://${owner}.github.io/${repoName}/`
+      : 'https://yunyangwiki.wang')
 
 /** 用于页面底部「帮我们改一改」的编辑链接 */
 const REPO_SLUG =

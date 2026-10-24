@@ -63,35 +63,102 @@ https://你的用户名.github.io/yunyang-wiki/
 
 ---
 
-# 二、绑定自己的域名（可选，但强烈建议）
+# 二、绑定自己的域名
 
-有了自己的域名，网址才短、才好记、才像回事。
+本站使用的域名：**yunyangwiki.wang**（根域名，不带 www）。
 
-## 买域名
+## ⚠️ 顺序很重要
 
-在阿里云、腾讯云、Namesilo 等平台买，`.com` / `.cn` 都可以，一年几十块。建议：
+**先配 DNS，再加 CNAME 文件。** 反过来会导致故障：GitHub 一旦发现仓库里有 CNAME 文件，就会立刻把 `github.io` 那个地址 301 跳到你的域名；如果这时域名还解析不了，站点会整个打不开。
 
-- `yunyang.wiki`、`yyhs.net` 这类
-- 不要用 `.cc`、`.top`，认知度低，部分校园网会拦
+正确顺序：**DNS 记录 → 确认能解析 → 推 CNAME 文件 → 在 Pages 设置里填域名**。
 
-## 配置
+## 第 1 步：在域名商后台加解析
 
-1. 在域名商后台加一条 CNAME 记录：`wiki` → `你的用户名.github.io`
-2. 在仓库里新建文件 `docs/public/CNAME`，内容只有一行：`wiki.你的域名.com`
-3. GitHub 仓库 `Settings` → `Pages` → `Custom domain` 填同样的域名，保存
-4. 等 DNS 生效（几分钟到几小时），勾选 `Enforce HTTPS`
+登录你买域名的平台（阿里云 / 腾讯云 / 新网等），进入「域名解析」，添加下面这些记录。
 
-> 代码会自动识别域名，不需要改任何配置。
+### 根域名 yunyangwiki.wang（4 条 A 记录）
+
+| 记录类型 | 主机记录 | 记录值 |
+| --- | --- | --- |
+| A | `@` | `185.199.108.153` |
+| A | `@` | `185.199.109.153` |
+| A | `@` | `185.199.110.153` |
+| A | `@` | `185.199.111.153` |
+
+这 4 个是 GitHub Pages 的官方 IP，缺一不可（少一条会导致部分用户打不开）。
+
+### www 子域名（1 条 CNAME）
+
+| 记录类型 | 主机记录 | 记录值 |
+| --- | --- | --- |
+| CNAME | `www` | `friday402-12.github.io` |
+
+这样 `www.yunyangwiki.wang` 也能访问，会自动跳到根域名。
+
+> 想更稳可以再加 4 条 AAAA（IPv6）记录，值分别是
+> `2606:50c0:8000::153`、`2606:50c0:8001::153`、`2606:50c0:8002::153`、`2606:50c0:8003::153`。
+> 不加也不影响使用。
+
+## 第 2 步：确认域名已实名认证
+
+国内注册的 `.wang` / `.cn` / `.com` 域名必须完成**实名认证**，否则解析不生效、域名状态会显示 `serverHold`。
+
+去域名控制台看「域名状态」，必须是**正常 / ok**。如果显示「未实名认证」，上传身份证、等 1–3 个工作日。
+
+## 第 3 步：推 CNAME 文件
+
+确认 `yunyangwiki.wang` 能 ping 通之后，在仓库里放一个文件：
+
+```
+docs/public/CNAME
+```
+
+内容只有一行（不要有空格、不要有 http）：
+
+```
+yunyangwiki.wang
+```
+
+> 这个文件一推上去，`github.io` 那个地址就会开始跳转到新域名。所以务必等 DNS 通了再推。
+
+## 第 4 步：在 GitHub 里填域名
+
+仓库 → `Settings` → `Pages` → **Custom domain** 填 `yunyangwiki.wang` → `Save`。
+
+等 1–2 分钟，DNS check 通过后，勾选 **`Enforce HTTPS`**（强制 HTTPS）。
+
+> 如果 `Enforce HTTPS` 是灰的，说明证书还在签发，通常等 15 分钟到 24 小时，VitePress 的证书是 GitHub 自动申请的 Let's Encrypt。
+
+## 代码会自动适配
+
+不需要改任何配置：
+
+- 检测到 `docs/public/CNAME` 存在 → 网站走根路径 `/`（不再是 `/yunyang-wiki/`）
+- sitemap 的域名自动用 CNAME 里的域名
+- 页面底部的编辑链接自动指向正确仓库
 
 ---
 
-# 三、必须改的三处（上线前）
+# 三、还需要手动改的地方
 
-| 位置                                              | 改什么                         |
-| ----------------------------------------------- | --------------------------- |
-| `docs/.vitepress/config.mts` 第 5 行              | `SITE` 改成你的真实网址（影响 sitemap） |
-| `docs/.vitepress/config.mts` 的 `editLink`       | `your-name` 改成你的 GitHub 用户名 |
-| `docs/.vitepress/config.mts` 的 `nav` / `footer` | 按需改导航和页脚                    |
+**大部分配置已经是自动的，不需要改：**
+
+| 项目 | 怎么来的 |
+| --- | --- |
+| 站点地址（sitemap） | 有 CNAME 就用 CNAME 的域名，没有就用 GitHub Pages 地址 |
+| 资源路径 `base` | 有 CNAME 走 `/`，没有走 `/仓库名/` |
+| 页面底部「帮我们改一改」 | 自动拼出当前仓库地址 |
+| 侧边栏、分类页、搜索索引 | 扫目录自动生成 |
+
+**真正需要你改的只剩这些：**
+
+| 位置 | 改什么 | 什么时候改 |
+| --- | --- | --- |
+| `docs/public/admin/config.yml` 第 6 行 | `repo:` 改成你的 `用户名/仓库名` | 启用内容后台时 |
+| `docs/.vitepress/config.mts` 的 `nav` | 顶部导航文字 | 想调整栏目时 |
+| `docs/.vitepress/config.mts` 的 `footer` | 页脚声明 | 想改文案时 |
+| `.github/CODEOWNERS` | 去掉最后一行的 `#` 并把 `your-name` 换成你的用户名 | 想让 PR 自动指派给你时 |
 
 ---
 
